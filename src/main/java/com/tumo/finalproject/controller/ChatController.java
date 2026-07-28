@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The chatbot endpoint: {@code POST /api/chat}.
@@ -93,7 +97,29 @@ public class ChatController {
      */
     @PostMapping
     public ResponseEntity<Map<String, Object>> chat(@RequestBody Map<String, String> request) {
-        // TODO: validate the message, ask the chat service, resolve topics via NASA, return both.
-        throw new UnsupportedOperationException("ChatController.chat not implemented");
+        String message = request.get("message");
+        if (message == null || message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Message is required"));
+        }
+
+        NasaChatService.ChatResult result = nasaChatService.chat(message);
+
+        List<NasaMedia> recommendations = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
+        for (String topic : result.topics()) {
+            try {
+                NasaMedia media = nasaService.searchOne(topic);
+                if (media != null && seenIds.add(media.getId())) {
+                    recommendations.add(media);
+                }
+            } catch (Exception ignored) {
+                // one bad topic should not break the whole reply
+            }
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "response", result.reply(),
+                "recommendations", recommendations
+        ));
     }
 }

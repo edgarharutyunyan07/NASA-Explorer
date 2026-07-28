@@ -3,109 +3,78 @@ package com.tumo.finalproject.service;
 import com.tumo.finalproject.model.NasaMedia;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Talks to NASA's Image and Video Library so our app can search real space
- * photos and videos.
+ * Searches NASA's official photo archive so our app can look up real space
+ * photos.
  *
  * <p>{@code @Service} marks this class as a Spring-managed component, which is why
  * {@code MediaController} can ask for a {@code NasaService} in its constructor and
  * simply receive one. That is <b>dependency injection</b>: you never write
  * {@code new NasaService(...)} yourself.
  *
- * <p>Unlike most APIs you will meet, this one needs <b>no API key at all</b> —
- * it is fully public. That also means there is nothing to read from
- * {@code application.properties} here.
+ * <p>We go through the Openverse API (openverse.org) rather than calling
+ * {@code images-api.nasa.gov} directly, because {@code nasa.gov} is unreachable
+ * from some networks (school/office content filters block the whole domain).
+ * Openverse re-indexes NASA's official Flickr feed under {@code source=nasa},
+ * so results are still genuine NASA photos, just served from a different host.
+ * No API key is required for this volume of traffic.
  *
  * <p>The API you are calling:
  * <pre>
- *   GET https://images-api.nasa.gov/search?q=apollo+11&amp;media_type=image,video
+ *   GET https://api.openverse.org/v1/images/?q=apollo+11&amp;source=nasa
  * </pre>
- * Paste that in a browser to see the JSON you have to parse. Unlike a flat
- * "results" array, NASA nests things one level deeper:
+ * Paste that in a browser to see the JSON you have to parse:
  * <pre>
  *   {
- *     "collection": {
- *       "items": [
- *         {
- *           "data":  [ { "nasa_id": "...", "title": "...", "description": "...",
- *                        "date_created": "...", "media_type": "image" } ],
- *           "links": [ { "href": "https://...thumb.jpg", "rendition": "thumb" } ]
- *         }
- *       ]
- *     }
+ *     "result_count": 240,
+ *     "results": [
+ *       { "id": "...", "title": "...", "indexed_on": "...",
+ *         "thumbnail": "https://...", "url": "https://..." }
+ *     ]
  *   }
  * </pre>
- * Each element of {@code items} carries its metadata in a one-element
- * {@code data} array, and its preview image in a {@code links} array — you have
- * to reach through both.
+ * Unlike NASA's own API this is a flat array — no nested {@code data}/{@code links}
+ * to reach through. Openverse only indexes images, not video, so every result's
+ * media type is reported as {@code "image"}.
  */
 @Service
 public class NasaService {
 
-    /**
-     * Sends the HTTP requests. {@code WebClient} is Spring's modern HTTP client.
-     * TODO: build this in the constructor.
-     */
-    private WebClient webClient;
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
-    /**
-     * Turns JSON text into objects we can navigate.
-     * TODO: create this in the constructor.
-     */
-    private ObjectMapper objectMapper;
-
-    /**
-     * Spring calls this constructor at startup.
-     *
-     * <h2>TODO — initialise the two fields above</h2>
-     * <pre>
-     *   this.objectMapper = new ObjectMapper();
-     *
-     *   this.webClient = WebClient.builder()
-     *           .baseUrl("https://images-api.nasa.gov")
-     *           .build();
-     * </pre>
-     * Setting a {@code baseUrl} once means every request below only needs the path
-     * ({@code "/search"}) instead of the whole URL.
-     */
     public NasaService() {
-        // TODO: initialise objectMapper and webClient here.
+        this.objectMapper = new ObjectMapper();
+
+        this.webClient = WebClient.builder()
+                .baseUrl("https://api.openverse.org")
+                .build();
     }
 
     /**
-     * Searches NASA's library and returns every photo/video it found, or an
-     * empty list if there were no matches.
-     *
-     * <h2>TODO — implement in two steps</h2>
-     * <b>Step 1: fetch the JSON.</b> Perform a GET and block until the response
-     * arrives (blocking keeps things simple while you are learning):
-     * <pre>
-     *   String response = webClient.get()
-     *           .uri(uriBuilder -&gt; uriBuilder
-     *                   .path("/search")
-     *                   .queryParam("q", query)
-     *                   .queryParam("media_type", "image,video")
-     *                   .build())
-     *           .retrieve()
-     *           .bodyToMono(String.class)
-     *           .block();
-     * </pre>
-     * Use {@code queryParam} rather than gluing the URL together with {@code +}:
-     * it URL-encodes the value for you, so a search containing a space or an
-     * {@code &amp;} still works.
-     *
-     * <p><b>Step 2:</b> hand the text to {@link #parseMedia(String)} and return
-     * the result.
+     * Searches NASA's official Flickr archive (via Openverse) and returns every
+     * photo it found, or an empty list if there were no matches.
      *
      * @param query what the user typed, e.g. "apollo 11"
      */
     public List<NasaMedia> searchMedia(String query) {
-        // TODO: call NASA /search, then return parseMedia(response).
-        throw new UnsupportedOperationException("NasaService.searchMedia not implemented");
+        String response = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/images/")
+                        .queryParam("q", query)
+                        .queryParam("source", "nasa")
+                        .queryParam("page_size", 20)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        return parseMedia(response);
     }
 
     /**
@@ -120,57 +89,43 @@ public class NasaService {
      * an {@code IndexOutOfBoundsException}.
      */
     public NasaMedia searchOne(String topic) {
-        // TODO: search for the topic and return the first result, or null.
-        throw new UnsupportedOperationException("NasaService.searchOne not implemented");
+        List<NasaMedia> results = searchMedia(topic);
+        return results.isEmpty() ? null : results.get(0);
     }
 
     /**
-     * Converts NASA's raw JSON into a list of {@link NasaMedia} objects.
+     * Converts Openverse's raw JSON into a list of {@link NasaMedia} objects.
      *
      * <p>This method is {@code private} on purpose: it is an internal helper, not
      * something controllers should call. Keeping the JSON details in here means the
      * rest of the app only ever deals with clean {@code NasaMedia} objects.
-     *
-     * <h2>TODO — implement</h2>
-     * <ol>
-     *   <li>Create an empty {@code List<NasaMedia>} to collect results into.</li>
-     *   <li>Wrap the parsing in {@code try/catch}, because malformed JSON throws.</li>
-     *   <li>{@code JsonNode root = objectMapper.readTree(json);} then
-     *       {@code JsonNode items = root.get("collection").get("items");}
-     *       (import {@code tools.jackson.databind.JsonNode}).</li>
-     *   <li>Check {@code items != null && items.isArray()} before looping — an
-     *       error response from NASA has no {@code items} field at all, and
-     *       calling a method on null would crash with a
-     *       {@code NullPointerException}.</li>
-     *   <li>For each {@code JsonNode item} in {@code items}:
-     *       <pre>
-     *   JsonNode data = item.get("data").get(0);
-     *   NasaMedia media = new NasaMedia();
-     *   media.setId(data.get("nasa_id").asString());
-     *   media.setTitle(data.has("title") ? data.get("title").asString() : "");
-     *   media.setDescription(data.has("description") ? data.get("description").asString() : "");
-     *   media.setMediaType(data.has("media_type") ? data.get("media_type").asString() : "image");
-     *   media.setDateCreated(data.has("date_created") ? data.get("date_created").asString() : "");
-     *       </pre>
-     *       The {@code has("...") ? ... : default} check matters: not every item
-     *       has every field.</li>
-     *   <li>The thumbnail lives one level up from {@code data}, in
-     *       {@code item.get("links")} — an array that can be missing entirely:
-     *       <pre>
-     *   JsonNode links = item.get("links");
-     *   if (links != null &amp;&amp; links.isArray() &amp;&amp; !links.isEmpty()) {
-     *       media.setThumbnailUrl(links.get(0).get("href").asString());
-     *   }
-     *       </pre></li>
-     *   <li>Add {@code media} to the list, and return the list.</li>
-     *   <li>In the {@code catch}, throw
-     *       {@code new RuntimeException("Failed to parse NASA response", e)}.
-     *       Passing {@code e} as the cause keeps the original stack trace, which
-     *       you will want when debugging.</li>
-     * </ol>
      */
     private List<NasaMedia> parseMedia(String json) {
-        // TODO: read the "collection.items" array and build one NasaMedia per element.
-        throw new UnsupportedOperationException("NasaService.parseMedia not implemented");
+        List<NasaMedia> results = new ArrayList<>();
+        try {
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode items = root.get("results");
+            if (items != null && items.isArray()) {
+                for (JsonNode item : items) {
+                    NasaMedia media = new NasaMedia();
+                    media.setId(item.has("id") ? item.get("id").asString() : "");
+                    media.setTitle(item.has("title") ? item.get("title").asString() : "");
+                    media.setDescription(item.has("attribution") ? item.get("attribution").asString() : "");
+                    media.setMediaType("image");
+                    media.setDateCreated(item.has("indexed_on") ? item.get("indexed_on").asString() : "");
+
+                    if (item.has("thumbnail")) {
+                        media.setThumbnailUrl(item.get("thumbnail").asString());
+                    } else if (item.has("url")) {
+                        media.setThumbnailUrl(item.get("url").asString());
+                    }
+
+                    results.add(media);
+                }
+            }
+            return results;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse Openverse response", e);
+        }
     }
 }

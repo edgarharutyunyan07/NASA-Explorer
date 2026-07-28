@@ -3,6 +3,8 @@ package com.tumo.finalproject.repository;
 import com.tumo.finalproject.model.FavoriteMedia;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * Database access for {@link FavoriteMedia}.
  *
@@ -31,5 +33,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface FavoriteRepository extends JpaRepository<FavoriteMedia, Long> {
 
-    // TODO: declare findByUsername, existsByUsernameAndNasaId and deleteByUsernameAndNasaId here.
+    List<FavoriteMedia> findByUsername(String username);
+
+    boolean existsByUsernameAndNasaId(String username, String nasaId);
+
+    long deleteByUsernameAndNasaId(String username, String nasaId);
 }

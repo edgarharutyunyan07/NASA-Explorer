@@ -3,6 +3,8 @@ package com.tumo.finalproject.repository;
 import com.tumo.finalproject.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 /**
  * Database access for {@link User}.
  *
@@ -33,5 +35,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // TODO: declare findByUsername and existsByUsername here.
+    Optional<User> findByUsername(String username);
+
+    boolean existsByUsername(String username);
 }

@@ -4,6 +4,7 @@ import com.tumo.finalproject.model.NasaMedia;
 import com.tumo.finalproject.model.WatchlistItem;
 import com.tumo.finalproject.repository.WatchlistRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,8 +33,9 @@ public class WatchlistService {
      * with {@link #toMedia(WatchlistItem)}, and return the list.
      */
     public List<NasaMedia> getWatchlist(String username) {
-        // TODO: load this user's rows and convert each to a NasaMedia.
-        throw new UnsupportedOperationException("WatchlistService.getWatchlist not implemented");
+        return watchlistRepository.findByUsername(username).stream()
+                .map(this::toMedia)
+                .toList();
     }
 
     /**
@@ -45,8 +47,10 @@ public class WatchlistService {
      * then return {@code media}. Adding the same item twice must not fail.
      */
     public NasaMedia addToWatchlist(String username, NasaMedia media) {
-        // TODO: save the item for this user unless it is already saved, then return it.
-        throw new UnsupportedOperationException("WatchlistService.addToWatchlist not implemented");
+        if (!watchlistRepository.existsByUsernameAndNasaId(username, media.getId())) {
+            watchlistRepository.save(toEntity(username, media));
+        }
+        return media;
     }
 
     /**
@@ -60,9 +64,9 @@ public class WatchlistService {
      *
      * @return true if an entry was actually removed
      */
+    @Transactional
     public boolean removeFromWatchlist(String username, String nasaId) {
-        // TODO: delete the row and report whether anything was removed.
-        throw new UnsupportedOperationException("WatchlistService.removeFromWatchlist not implemented");
+        return watchlistRepository.deleteByUsernameAndNasaId(username, nasaId) > 0;
     }
 
     /**
@@ -73,8 +77,8 @@ public class WatchlistService {
      * {@code w.getNasaId()} as the NasaMedia's id — not {@code w.getId()}.
      */
     private NasaMedia toMedia(WatchlistItem w) {
-        // TODO: convert the entity into a NasaMedia (use getNasaId() as the NasaMedia id).
-        throw new UnsupportedOperationException("WatchlistService.toMedia not implemented");
+        return new NasaMedia(w.getNasaId(), w.getTitle(), w.getDescription(),
+                w.getMediaType(), w.getDateCreated(), w.getThumbnailUrl());
     }
 
     /**
@@ -85,7 +89,7 @@ public class WatchlistService {
      * constructor arguments filled in.
      */
     private WatchlistItem toEntity(String username, NasaMedia m) {
-        // TODO: convert the NasaMedia into a WatchlistItem owned by this username.
-        throw new UnsupportedOperationException("WatchlistService.toEntity not implemented");
+        return new WatchlistItem(username, m.getId(), m.getTitle(), m.getDescription(),
+                m.getMediaType(), m.getDateCreated(), m.getThumbnailUrl());
     }
 }

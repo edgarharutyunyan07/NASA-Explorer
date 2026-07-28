@@ -104,8 +104,10 @@ public class MediaController {
      */
     @GetMapping("/search")
     public ResponseEntity<List<NasaMedia>> searchMedia(@RequestParam String query) {
-        // TODO: validate the query, then return the search results.
-        throw new UnsupportedOperationException("MediaController.searchMedia not implemented");
+        if (query == null || query.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(nasaService.searchMedia(query));
     }
 
     /**
@@ -118,8 +120,11 @@ public class MediaController {
      */
     @GetMapping("/favorites")
     public ResponseEntity<List<NasaMedia>> getFavorites(HttpSession session) {
-        // TODO: require a logged-in user, then return their favorites.
-        throw new UnsupportedOperationException("MediaController.getFavorites not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(favoritesService.getFavorites(username));
     }
 
     /**
@@ -137,8 +142,11 @@ public class MediaController {
      */
     @PostMapping("/favorites")
     public ResponseEntity<NasaMedia> addFavorite(@RequestBody NasaMedia media, HttpSession session) {
-        // TODO: require a logged-in user, then save the item for them.
-        throw new UnsupportedOperationException("MediaController.addFavorite not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(favoritesService.addFavorite(username, media));
     }
 
     /**
@@ -158,8 +166,12 @@ public class MediaController {
      */
     @DeleteMapping("/favorites/{id}")
     public ResponseEntity<Void> removeFavorite(@PathVariable String id, HttpSession session) {
-        // TODO: require a logged-in user, then delete and return 200 or 404.
-        throw new UnsupportedOperationException("MediaController.removeFavorite not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        boolean removed = favoritesService.removeFavorite(username, id);
+        return removed ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     /**
@@ -170,8 +182,11 @@ public class MediaController {
      */
     @GetMapping("/watchlist")
     public ResponseEntity<List<NasaMedia>> getWatchlist(HttpSession session) {
-        // TODO: require a logged-in user, then return their watchlist.
-        throw new UnsupportedOperationException("MediaController.getWatchlist not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(watchlistService.getWatchlist(username));
     }
 
     /**
@@ -183,8 +198,11 @@ public class MediaController {
      */
     @PostMapping("/watchlist")
     public ResponseEntity<NasaMedia> addToWatchlist(@RequestBody NasaMedia media, HttpSession session) {
-        // TODO: require a logged-in user, then add the item to their watchlist.
-        throw new UnsupportedOperationException("MediaController.addToWatchlist not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(watchlistService.addToWatchlist(username, media));
     }
 
     /**
@@ -196,8 +214,12 @@ public class MediaController {
      */
     @DeleteMapping("/watchlist/{id}")
     public ResponseEntity<Void> removeFromWatchlist(@PathVariable String id, HttpSession session) {
-        // TODO: require a logged-in user, then delete and return 200 or 404.
-        throw new UnsupportedOperationException("MediaController.removeFromWatchlist not implemented");
+        String username = currentUser(session);
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        boolean removed = watchlistService.removeFromWatchlist(username, id);
+        return removed ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     /**
@@ -215,7 +237,6 @@ public class MediaController {
      * the day you change how login works, you change it in one place.
      */
     private String currentUser(HttpSession session) {
-        // TODO: read the "username" attribute out of the session.
-        throw new UnsupportedOperationException("MediaController.currentUser not implemented");
+        return (String) session.getAttribute("username");
     }
 }

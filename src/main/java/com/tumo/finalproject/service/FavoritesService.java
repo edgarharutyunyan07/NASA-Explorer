@@ -4,6 +4,7 @@ import com.tumo.finalproject.model.FavoriteMedia;
 import com.tumo.finalproject.model.NasaMedia;
 import com.tumo.finalproject.repository.FavoriteRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -47,8 +48,9 @@ public class FavoritesService {
      * frontend expects.
      */
     public List<NasaMedia> getFavorites(String username) {
-        // TODO: load this user's rows and convert each to a NasaMedia.
-        throw new UnsupportedOperationException("FavoritesService.getFavorites not implemented");
+        return favoriteRepository.findByUsername(username).stream()
+                .map(this::toMedia)
+                .toList();
     }
 
     /**
@@ -68,8 +70,10 @@ public class FavoritesService {
      * <b>idempotent</b>: doing it again changes nothing and still succeeds.
      */
     public NasaMedia addFavorite(String username, NasaMedia media) {
-        // TODO: save the item for this user unless it is already saved, then return it.
-        throw new UnsupportedOperationException("FavoritesService.addFavorite not implemented");
+        if (!favoriteRepository.existsByUsernameAndNasaId(username, media.getId())) {
+            favoriteRepository.save(toEntity(username, media));
+        }
+        return media;
     }
 
     /**
@@ -93,9 +97,9 @@ public class FavoritesService {
      * @param nasaId the item's NASA id, not the database primary key
      * @return true if a favorite was actually removed
      */
+    @Transactional
     public boolean removeFavorite(String username, String nasaId) {
-        // TODO: delete the row and report whether anything was removed.
-        throw new UnsupportedOperationException("FavoritesService.removeFavorite not implemented");
+        return favoriteRepository.deleteByUsernameAndNasaId(username, nasaId) > 0;
     }
 
     /**
@@ -112,8 +116,8 @@ public class FavoritesService {
      * two up is the classic bug in this project.
      */
     private NasaMedia toMedia(FavoriteMedia f) {
-        // TODO: convert the entity into a NasaMedia (use getNasaId() as the NasaMedia id).
-        throw new UnsupportedOperationException("FavoritesService.toMedia not implemented");
+        return new NasaMedia(f.getNasaId(), f.getTitle(), f.getDescription(),
+                f.getMediaType(), f.getDateCreated(), f.getThumbnailUrl());
     }
 
     /**
@@ -126,7 +130,7 @@ public class FavoritesService {
      * the database generates it when the row is inserted.
      */
     private FavoriteMedia toEntity(String username, NasaMedia m) {
-        // TODO: convert the NasaMedia into a FavoriteMedia owned by this username.
-        throw new UnsupportedOperationException("FavoritesService.toEntity not implemented");
+        return new FavoriteMedia(username, m.getId(), m.getTitle(), m.getDescription(),
+                m.getMediaType(), m.getDateCreated(), m.getThumbnailUrl());
     }
 }

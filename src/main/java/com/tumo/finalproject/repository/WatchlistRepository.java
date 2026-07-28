@@ -3,6 +3,8 @@ package com.tumo.finalproject.repository;
 import com.tumo.finalproject.model.WatchlistItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * Database access for {@link WatchlistItem}. The mirror image of
  * {@link FavoriteRepository}, pointing at a different entity and table.
@@ -23,5 +25,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface WatchlistRepository extends JpaRepository<WatchlistItem, Long> {
 
-    // TODO: declare findByUsername, existsByUsernameAndNasaId and deleteByUsernameAndNasaId here.
+    List<WatchlistItem> findByUsername(String username);
+
+    boolean existsByUsernameAndNasaId(String username, String nasaId);
+
+    long deleteByUsernameAndNasaId(String username, String nasaId);
 }

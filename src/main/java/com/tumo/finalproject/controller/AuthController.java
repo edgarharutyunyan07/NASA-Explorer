@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * Register, log in, log out, and "who am I?".
  *
@@ -59,8 +61,13 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest req, HttpSession session) {
-        // TODO: register the user, log them in, and handle IllegalArgumentException as a 400.
-        throw new UnsupportedOperationException("AuthController.register not implemented");
+        try {
+            userService.register(req.username(), req.password());
+            session.setAttribute("username", req.username().trim());
+            return ResponseEntity.ok(Map.of("username", req.username().trim()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**
@@ -82,8 +89,11 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest req, HttpSession session) {
-        // TODO: authenticate, then either start a session or return 401.
-        throw new UnsupportedOperationException("AuthController.login not implemented");
+        if (userService.authenticate(req.username(), req.password())) {
+            session.setAttribute("username", req.username().trim());
+            return ResponseEntity.ok(Map.of("username", req.username().trim()));
+        }
+        return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
     }
 
     /**
@@ -103,8 +113,8 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpSession session) {
-        // TODO: invalidate the session and return 200.
-        throw new UnsupportedOperationException("AuthController.logout not implemented");
+        session.invalidate();
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -126,8 +136,11 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
-        // TODO: report the logged-in username, or 401 if there is none.
-        throw new UnsupportedOperationException("AuthController.me not implemented");
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(Map.of("username", username));
     }
 
     /**

@@ -74,8 +74,17 @@ public class UserService {
      * @throws IllegalArgumentException if the input is invalid or the name is taken
      */
     public User register(String username, String rawPassword) {
-        // TODO: validate the input, check for a duplicate name, hash and save.
-        throw new UnsupportedOperationException("UserService.register not implemented");
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (rawPassword == null || rawPassword.length() < 4) {
+            throw new IllegalArgumentException("Password must be at least 4 characters");
+        }
+        String trimmed = username.trim();
+        if (userRepository.existsByUsername(trimmed)) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+        return userRepository.save(new User(trimmed, passwordEncoder.encode(rawPassword)));
     }
 
     /**
@@ -103,7 +112,11 @@ public class UserService {
      * password" hands them a list of valid accounts.
      */
     public boolean authenticate(String username, String rawPassword) {
-        // TODO: find the user and compare the password against the stored hash.
-        throw new UnsupportedOperationException("UserService.authenticate not implemented");
+        if (username == null || rawPassword == null) {
+            return false;
+        }
+        return userRepository.findByUsername(username.trim())
+                .map(user -> passwordEncoder.matches(rawPassword, user.getPasswordHash()))
+                .orElse(false);
     }
 }
