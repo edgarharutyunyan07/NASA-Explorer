@@ -12,10 +12,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *   List&lt;WatchlistItem&gt; findByUsername(String username);
  *       Every watchlist entry belonging to one user. Import java.util.List.
  *
- *   boolean existsByUsernameAndTmdbId(String username, int tmdbId);
- *       Is this movie already on that user's watchlist?
+ *   boolean existsByUsernameAndNasaId(String username, String nasaId);
+ *       Is this item already on that user's watchlist?
  *
- *   long deleteByUsernameAndTmdbId(String username, int tmdbId);
+ *   long deleteByUsernameAndNasaId(String username, String nasaId);
  *       Delete it, returning the number of rows removed (0 = nothing matched).
  * </pre>
  * Add them only after the fields exist in {@link WatchlistItem}, or the app fails
@@ -23,5 +23,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface WatchlistRepository extends JpaRepository<WatchlistItem, Long> {
 
-    // TODO: declare findByUsername, existsByUsernameAndTmdbId and deleteByUsernameAndTmdbId here.
+    // TODO: declare findByUsername, existsByUsernameAndNasaId and deleteByUsernameAndNasaId here.
 }

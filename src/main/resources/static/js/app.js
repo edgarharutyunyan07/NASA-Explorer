@@ -1,10 +1,9 @@
 const API_BASE = '/api';
-const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 
-let currentMovies = [];
+let currentMedia = [];
 let favorites = [];
 let watchlist = [];
-let selectedMovie = null;
+let selectedMedia = null;
 let authMode = 'login'; // 'login' or 'register'
 
 // --- Init ---
@@ -12,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
 
     document.getElementById('searchInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') searchMovies();
+        if (e.key === 'Enter') searchMedia();
     });
 
     document.getElementById('chatInput').addEventListener('keydown', (e) => {
@@ -65,7 +64,7 @@ function toggleAuthMode() {
     authMode = authMode === 'login' ? 'register' : 'login';
     const isLogin = authMode === 'login';
     document.getElementById('authSubtitle').textContent =
-        isLogin ? 'Log in to see your favorite movies' : 'Create an account to save your favorites';
+        isLogin ? 'Log in to see your saved photos and videos' : 'Create an account to save your favorites';
     document.getElementById('authSubmitBtn').textContent = isLogin ? 'Log In' : 'Sign Up';
     document.getElementById('authTogglePrompt').textContent =
         isLogin ? "Don't have an account?" : 'Already have an account?';
@@ -114,7 +113,7 @@ async function logout() {
     }
     favorites = [];
     watchlist = [];
-    currentMovies = [];
+    currentMedia = [];
     document.getElementById('movieGrid').innerHTML = '';
     document.getElementById('favoritesGrid').innerHTML = '';
     document.getElementById('watchlistGrid').innerHTML = '';
@@ -153,22 +152,22 @@ function showSection(section) {
 }
 
 // --- Search ---
-async function searchMovies() {
+async function searchMedia() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return;
 
     showLoading(true);
     try {
-        const res = await fetch(`${API_BASE}/movies/search?query=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_BASE}/media/search?query=${encodeURIComponent(query)}`);
         if (!res.ok) throw new Error('Search failed');
-        currentMovies = await res.json();
-        renderMovieGrid(currentMovies, 'movieGrid');
+        currentMedia = await res.json();
+        renderMediaGrid(currentMedia, 'movieGrid');
         document.getElementById('resultsTitle').textContent =
-            currentMovies.length > 0 ? `Results for "${query}"` : '';
-        document.getElementById('noResults').classList.toggle('d-none', currentMovies.length > 0);
+            currentMedia.length > 0 ? `Results for "${query}"` : '';
+        document.getElementById('noResults').classList.toggle('d-none', currentMedia.length > 0);
     } catch (err) {
         console.error(err);
-        document.getElementById('resultsTitle').textContent = 'Error searching movies';
+        document.getElementById('resultsTitle').textContent = 'Error searching NASA media';
     } finally {
         showLoading(false);
     }
@@ -177,30 +176,30 @@ async function searchMovies() {
 // --- Favorites ---
 async function loadFavorites() {
     try {
-        const res = await fetch(`${API_BASE}/movies/favorites`);
+        const res = await fetch(`${API_BASE}/media/favorites`);
         if (res.status === 401) {
             showAuthOverlay();
             return;
         }
         favorites = await res.json();
         updateFavCount();
-        renderMovieGrid(favorites, 'favoritesGrid');
+        renderMediaGrid(favorites, 'favoritesGrid');
         document.getElementById('noFavorites').classList.toggle('d-none', favorites.length > 0);
         // Re-render search results to update heart icons
-        if (currentMovies.length > 0) {
-            renderMovieGrid(currentMovies, 'movieGrid');
+        if (currentMedia.length > 0) {
+            renderMediaGrid(currentMedia, 'movieGrid');
         }
     } catch (err) {
         console.error('Failed to load favorites', err);
     }
 }
 
-async function addFavorite(movie) {
+async function addFavorite(media) {
     try {
-        await fetch(`${API_BASE}/movies/favorites`, {
+        await fetch(`${API_BASE}/media/favorites`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(movie)
+            body: JSON.stringify(media)
         });
         await loadFavorites();
     } catch (err) {
@@ -210,7 +209,7 @@ async function addFavorite(movie) {
 
 async function removeFavorite(id) {
     try {
-        await fetch(`${API_BASE}/movies/favorites/${id}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/media/favorites/${encodeURIComponent(id)}`, { method: 'DELETE' });
         await loadFavorites();
     } catch (err) {
         console.error('Failed to remove favorite', err);
@@ -234,26 +233,26 @@ function updateFavCount() {
 // --- Watchlist (save for later) ---
 async function loadWatchlist() {
     try {
-        const res = await fetch(`${API_BASE}/movies/watchlist`);
+        const res = await fetch(`${API_BASE}/media/watchlist`);
         if (res.status === 401) {
             showAuthOverlay();
             return;
         }
         watchlist = await res.json();
         updateWatchCount();
-        renderMovieGrid(watchlist, 'watchlistGrid', 'watchlist');
+        renderMediaGrid(watchlist, 'watchlistGrid', 'watchlist');
         document.getElementById('noWatchlist').classList.toggle('d-none', watchlist.length > 0);
     } catch (err) {
         console.error('Failed to load watchlist', err);
     }
 }
 
-async function addToWatchlist(movie) {
+async function addToWatchlist(media) {
     try {
-        await fetch(`${API_BASE}/movies/watchlist`, {
+        await fetch(`${API_BASE}/media/watchlist`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(movie)
+            body: JSON.stringify(media)
         });
         await loadWatchlist();
     } catch (err) {
@@ -263,7 +262,7 @@ async function addToWatchlist(movie) {
 
 async function removeFromWatchlist(id) {
     try {
-        await fetch(`${API_BASE}/movies/watchlist/${id}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/media/watchlist/${encodeURIComponent(id)}`, { method: 'DELETE' });
         await loadWatchlist();
     } catch (err) {
         console.error('Failed to remove from watchlist', err);
@@ -285,43 +284,41 @@ function updateWatchCount() {
 }
 
 // --- Rendering ---
-function renderMovieGrid(movies, containerId, mode = 'favorites') {
+function renderMediaGrid(items, containerId, mode = 'favorites') {
     const container = document.getElementById(containerId);
-    container.innerHTML = movies.map(movie => {
-        const posterUrl = movie.poster_path
-            ? `${TMDB_IMG}${movie.poster_path}`
-            : null;
-        const year = movie.release_date ? movie.release_date.substring(0, 4) : '';
-        const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+    container.innerHTML = items.map(media => {
+        const thumbnailUrl = media.thumbnail_url || null;
+        const year = media.date_created ? media.date_created.substring(0, 4) : '';
+        const isVideo = media.media_type === 'video';
 
         let actionBtn;
         if (mode === 'watchlist') {
             actionBtn = `
                 <button class="fav-btn active"
-                        onclick="event.stopPropagation(); removeFromWatchlist(${movie.id})"
+                        onclick="event.stopPropagation(); removeFromWatchlist('${media.id}')"
                         title="Remove from watchlist">
                     <i class="bi bi-bookmark-x-fill"></i>
                 </button>`;
         } else {
-            const isFav = isFavorite(movie.id);
+            const isFav = isFavorite(media.id);
             actionBtn = `
                 <button class="fav-btn ${isFav ? 'active' : ''}"
-                        onclick="event.stopPropagation(); toggleFavorite(${movie.id})"
+                        onclick="event.stopPropagation(); toggleFavorite('${media.id}')"
                         title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
                     <i class="bi ${isFav ? 'bi-heart-fill' : 'bi-heart'}"></i>
                 </button>`;
         }
 
         return `
-            <div class="movie-card" onclick="openDetail(${movie.id})">
-                ${posterUrl
-                    ? `<img class="poster" src="${posterUrl}" alt="${escapeHtml(movie.title)}" loading="lazy">`
-                    : `<div class="no-poster"><i class="bi bi-film"></i></div>`
+            <div class="movie-card" onclick="openDetail('${media.id}')">
+                ${thumbnailUrl
+                    ? `<img class="poster" src="${thumbnailUrl}" alt="${escapeHtml(media.title)}" loading="lazy">`
+                    : `<div class="no-poster"><i class="bi bi-image"></i></div>`
                 }
+                ${isVideo ? '<span class="media-badge"><i class="bi bi-play-fill"></i> Video</span>' : ''}
                 <div class="card-body">
-                    <div class="card-title" title="${escapeHtml(movie.title)}">${escapeHtml(movie.title)}</div>
+                    <div class="card-title" title="${escapeHtml(media.title)}">${escapeHtml(media.title)}</div>
                     <div class="card-meta">
-                        <span class="rating-badge"><i class="bi bi-star-fill"></i> ${rating}</span>
                         <span class="text-muted">${year}</span>
                         ${actionBtn}
                     </div>
@@ -331,21 +328,22 @@ function renderMovieGrid(movies, containerId, mode = 'favorites') {
     }).join('');
 }
 
-// --- Movie Detail Modal ---
-function openDetail(movieId) {
-    const movie = findMovie(movieId);
-    if (!movie) return;
+// --- Media Detail Modal ---
+function openDetail(mediaId) {
+    const media = findMedia(mediaId);
+    if (!media) return;
 
-    selectedMovie = movie;
-    const posterUrl = movie.poster_path ? `${TMDB_IMG}${movie.poster_path}` : '';
-    const isFav = isFavorite(movie.id);
+    selectedMedia = media;
+    const thumbnailUrl = media.thumbnail_url || '';
+    const isFav = isFavorite(media.id);
 
-    document.getElementById('modalPoster').src = posterUrl;
-    document.getElementById('modalPoster').style.display = posterUrl ? 'block' : 'none';
-    document.getElementById('modalTitle').textContent = movie.title;
-    document.getElementById('modalRating').textContent = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
-    document.getElementById('modalDate').textContent = movie.release_date || 'Unknown';
-    document.getElementById('modalOverview').textContent = movie.overview || 'No overview available.';
+    document.getElementById('modalPoster').src = thumbnailUrl;
+    document.getElementById('modalPoster').style.display = thumbnailUrl ? 'block' : 'none';
+    document.getElementById('modalTitle').textContent = media.title;
+    document.getElementById('modalRating').textContent = media.media_type === 'video' ? 'Video' : 'Image';
+    document.getElementById('modalDate').textContent = media.date_created ? media.date_created.substring(0, 10) : 'Unknown';
+    document.getElementById('modalOverview').textContent = media.description || 'No description available.';
+    document.getElementById('modalNasaLink').href = `https://images.nasa.gov/details/${encodeURIComponent(media.id)}`;
 
     const favBtn = document.getElementById('modalFavBtn');
     favBtn.innerHTML = isFav
@@ -357,10 +355,10 @@ function openDetail(movieId) {
 }
 
 async function toggleFavoriteFromModal() {
-    if (!selectedMovie) return;
-    await toggleFavorite(selectedMovie.id);
+    if (!selectedMedia) return;
+    await toggleFavorite(selectedMedia.id);
 
-    const isFav = isFavorite(selectedMovie.id);
+    const isFav = isFavorite(selectedMedia.id);
     const favBtn = document.getElementById('modalFavBtn');
     favBtn.innerHTML = isFav
         ? '<i class="bi bi-heart-fill"></i> Remove from Favorites'
@@ -368,17 +366,17 @@ async function toggleFavoriteFromModal() {
     favBtn.className = isFav ? 'btn btn-outline-danger btn-lg' : 'btn btn-danger btn-lg';
 }
 
-async function toggleFavorite(movieId) {
-    if (isFavorite(movieId)) {
-        await removeFavorite(movieId);
+async function toggleFavorite(mediaId) {
+    if (isFavorite(mediaId)) {
+        await removeFavorite(mediaId);
     } else {
-        const movie = findMovie(movieId);
-        if (movie) await addFavorite(movie);
+        const media = findMedia(mediaId);
+        if (media) await addFavorite(media);
     }
 }
 
-function findMovie(id) {
-    return currentMovies.find(m => m.id === id)
+function findMedia(id) {
+    return currentMedia.find(m => m.id === id)
         || favorites.find(m => m.id === id)
         || watchlist.find(m => m.id === id);
 }
@@ -423,24 +421,24 @@ async function sendChat() {
     }
 }
 
-function appendChatRecommendations(movies) {
+function appendChatRecommendations(items) {
     const container = document.getElementById('chatMessages');
     const wrap = document.createElement('div');
     wrap.className = 'chat-recs';
 
-    movies.forEach(movie => {
-        const year = movie.release_date ? movie.release_date.substring(0, 4) : '';
+    items.forEach(media => {
+        const year = media.date_created ? media.date_created.substring(0, 4) : '';
         const chip = document.createElement('div');
         chip.className = 'chat-rec';
 
         const label = document.createElement('span');
         label.className = 'chat-rec-title';
-        label.textContent = year ? `${movie.title} (${year})` : movie.title;
+        label.textContent = year ? `${media.title} (${year})` : media.title;
 
         const btn = document.createElement('button');
         btn.className = 'chat-rec-btn';
-        setSaveButtonState(btn, isInWatchlist(movie.id));
-        btn.onclick = () => saveFromChat(movie, btn);
+        setSaveButtonState(btn, isInWatchlist(media.id));
+        btn.onclick = () => saveFromChat(media, btn);
 
         chip.appendChild(label);
         chip.appendChild(btn);
@@ -458,10 +456,10 @@ function setSaveButtonState(btn, saved) {
         : '<i class="bi bi-bookmark-plus"></i> Save for later';
 }
 
-async function saveFromChat(movie, btn) {
-    if (isInWatchlist(movie.id)) return;
+async function saveFromChat(media, btn) {
+    if (isInWatchlist(media.id)) return;
     btn.disabled = true;
-    await addToWatchlist(movie);
+    await addToWatchlist(media);
     setSaveButtonState(btn, true);
     btn.disabled = false;
 }

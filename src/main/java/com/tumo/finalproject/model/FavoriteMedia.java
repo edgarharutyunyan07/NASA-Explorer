@@ -7,13 +7,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * A NASA photo or video one user saved to their "look at later" list — one row
- * in the {@code watchlist} table.
+ * A NASA photo or video one user has saved to their favorites — one row in the
+ * {@code favorites} table.
  *
- * <p>This is deliberately almost identical to {@link FavoriteMedia}: same fields,
- * different table, so the two lists stay independent. Once both work, ask
- * yourself how you would remove the duplication (hint: a shared abstract parent
- * class, or JPA's {@code @MappedSuperclass}) — that is a good stretch goal.
+ * <p>Why not just store a {@link NasaMedia}? Because a favorite needs two extra
+ * things a NasaMedia does not have: a database primary key, and the
+ * {@code username} of the person who saved it. {@code FavoriteMedia} is the
+ * database shape; {@link NasaMedia} is the shape the browser sees.
+ * {@code FavoritesService} converts between them.
  *
  * <h2>TODO 1 — declare the remaining fields (all private)</h2>
  * <pre>
@@ -32,15 +33,20 @@ import jakarta.persistence.Table;
  *   &#64;Column(nullable = false)     above username and above nasaId
  *   &#64;Column(length = 2000)        above description
  * </pre>
+ * A NASA caption easily exceeds the 255-character default, so without
+ * {@code length = 2000} saving a long description fails at runtime.
  *
- * <h2>TODO 3 — make (username, nasaId) unique</h2>
- * Import {@code jakarta.persistence.UniqueConstraint} and extend {@code @Table}:
+ * <h2>TODO 3 — stop the same item being favorited twice</h2>
+ * Import {@code jakarta.persistence.UniqueConstraint} and extend the
+ * {@code @Table} annotation below so the <i>pair</i> (username, nasaId) must be
+ * unique:
  * <pre>
- *   &#64;Table(name = "watchlist",
+ *   &#64;Table(name = "favorites",
  *          uniqueConstraints = &#64;UniqueConstraint(columnNames = {"username", "nasaId"}))
  * </pre>
- * Add this only after TODO 1, or Hibernate will fail at startup naming a column
- * that does not exist yet.
+ * Two different users may both favorite the same photo; one user may not
+ * favorite it twice. Add this only after TODO 1, or Hibernate will fail at
+ * startup naming a column that does not exist yet.
  *
  * <h2>TODO 4 — add two constructors</h2>
  * <ul>
@@ -51,8 +57,8 @@ import jakarta.persistence.Table;
  * <h2>TODO 5 — add getters and setters for every field, including {@code id}</h2>
  */
 @Entity
-@Table(name = "watchlist")
-public class WatchlistItem {
+@Table(name = "favorites")
+public class FavoriteMedia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

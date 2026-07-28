@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * The AI recommendation chatbot. Sends the user's message to a Large Language
  * Model and turns the answer into (a) friendly text to display and (b) a list of
- * movie titles the app can look up on TMDB.
+ * NASA search topics the app can look up in the image/video library.
  *
  * <p>We call <a href="https://console.groq.com">Groq</a>, which is free to start
  * and speaks the same request format as most chat APIs:
@@ -24,10 +24,10 @@ import java.util.List;
  * prose, which is lovely for humans and useless for code. So we <i>instruct</i> it
  * to reply as JSON with a fixed shape, and we also pass
  * {@code response_format: {"type": "json_object"}} to enforce it. Then we can read
- * the reply text and the recommended titles as separate values.
+ * the reply text and the recommended topics as separate values.
  */
 @Service
-public class MovieChatService {
+public class NasaChatService {
 
     /**
      * Which model to use. Different models trade speed against quality; this one
@@ -58,27 +58,26 @@ public class MovieChatService {
      * only write the Authorization header once. Note the required {@code "Bearer "}
      * prefix — a very common source of 401 errors.
      */
-    public MovieChatService(@Value("${groq.api.key}") String apiKey) {
+    public NasaChatService(@Value("${groq.api.key}") String apiKey) {
         this.apiKey = apiKey;
         // TODO: initialise objectMapper and webClient here.
     }
 
     /**
-     * The assistant's conversational reply, plus the titles of any movies it
-     * recommended.
+     * The assistant's conversational reply, plus the search topics it recommended.
      *
      * <p>This is a Java {@code record}: a short way to declare an immutable data
      * carrier. The compiler generates the constructor, the accessors
-     * ({@code reply()}, {@code titles()}), {@code equals}, {@code hashCode} and
+     * ({@code reply()}, {@code topics()}), {@code equals}, {@code hashCode} and
      * {@code toString}. Perfect for returning two related values from one method —
      * far better than an {@code Object[]} or a {@code Map}. It is written for you;
      * leave it as it is.
      */
-    public record ChatResult(String reply, List<String> titles) {
+    public record ChatResult(String reply, List<String> topics) {
     }
 
     /**
-     * Asks the model for movie recommendations.
+     * Asks the model for space-imagery recommendations.
      *
      * <h2>TODO — implement in three steps</h2>
      *
@@ -86,13 +85,15 @@ public class MovieChatService {
      * before the user speaks. Yours must state the model's job <i>and</i> the exact
      * JSON shape you expect back. Build a String saying, in your own words:
      * <pre>
-     *   You are a friendly movie recommendation assistant. Recommend movies based
-     *   on the user's preferences. Respond ONLY with a JSON object of this exact
-     *   shape: {"reply": string, "movies": [{"title": string, "year": string}]}.
-     *   'reply' is your friendly, concise message; for each recommendation include
-     *   its title, year and a brief reason the user might enjoy it, and end by
-     *   asking if they would like to save any of them for later. 'movies' lists
-     *   exactly the movies you recommended in 'reply' (use an empty array if none).
+     *   You are a friendly space and astronomy assistant. Recommend NASA photos
+     *   or videos to look up based on the user's interests (missions, planets,
+     *   astronauts, historic events, telescopes, etc). Respond ONLY with a JSON
+     *   object of this exact shape: {"reply": string, "topics": [string]}.
+     *   'reply' is your friendly, concise message; for each recommendation
+     *   mention what it is and why it's worth seeing, and end by asking if the
+     *   user would like to save any of them. 'topics' lists short search phrases
+     *   for the items you mentioned (e.g. "Apollo 11 moonwalk", "Hubble Deep
+     *   Field", "Perseverance rover landing") — use an empty array if none.
      * </pre>
      * Remember to escape the quotes inside a Java String literal: {@code \"reply\"}.
      * This prompt is the part worth experimenting with — change the wording, restart,
@@ -141,7 +142,7 @@ public class MovieChatService {
      */
     public ChatResult chat(String userMessage) {
         // TODO: build the system prompt, POST to /chat/completions, return extractResult(...).
-        throw new UnsupportedOperationException("MovieChatService.chat not implemented");
+        throw new UnsupportedOperationException("NasaChatService.chat not implemented");
     }
 
     /**
@@ -152,7 +153,7 @@ public class MovieChatService {
      * <i>string</i> sitting inside it, and that string is itself JSON:
      * <pre>
      *   {
-     *     "choices": [ { "message": { "content": "{\"reply\": \"...\", \"movies\": [...]}" } } ]
+     *     "choices": [ { "message": { "content": "{\"reply\": \"...\", \"topics\": [...]}" } } ]
      *   }
      * </pre>
      *
@@ -172,11 +173,11 @@ public class MovieChatService {
      *   <li>Take {@code parsed.get("reply").asString()} as the reply — falling back to
      *       the raw {@code content} if there is no {@code "reply"} field, so the user
      *       still sees something useful.</li>
-     *   <li>Loop over {@code parsed.get("movies")} and collect every non-blank
-     *       {@code "title"} into a {@code List<String>}.</li>
-     *   <li>{@code return new ChatResult(reply, titles);}</li>
+     *   <li>Loop over {@code parsed.get("topics")} and collect every non-blank
+     *       string into a {@code List<String>}.</li>
+     *   <li>{@code return new ChatResult(reply, topics);}</li>
      *   <li>In the {@code catch}, return a {@code ChatResult} whose reply explains
-     *       the problem and whose title list is {@code List.of()}.</li>
+     *       the problem and whose topic list is {@code List.of()}.</li>
      * </ol>
      *
      * <p>If you did the stretch goal above, also check near the top for
@@ -185,6 +186,6 @@ public class MovieChatService {
      */
     private ChatResult extractResult(String json) {
         // TODO: unwrap choices[0].message.content, then parse that string as JSON.
-        throw new UnsupportedOperationException("MovieChatService.extractResult not implemented");
+        throw new UnsupportedOperationException("NasaChatService.extractResult not implemented");
     }
 }
