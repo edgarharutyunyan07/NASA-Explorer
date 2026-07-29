@@ -1,13 +1,34 @@
+/* =========================================================================
+   TUMO NASA Explorer — Mission Console theme
+   Deep-space navy, amber/cyan telemetry duotone, monospace data readouts.
+   ========================================================================= */
+
 :root {
-    --bg-primary: #141414;
-    --bg-secondary: #1a1a1a;
-    --bg-card: #222;
-    --bg-hover: #2a2a2a;
-    --text-primary: #e5e5e5;
-    --text-secondary: #999;
-    --accent: #e50914;
-    --accent-hover: #f40612;
-    --gold: #f5c518;
+    /* Space */
+    --void: #060a14;
+    --void-deep: #030509;
+    --panel: #0d1526;
+    --panel-raised: #131f38;
+    --line: #24314c;
+    --line-soft: #1a2338;
+
+    /* Ink */
+    --star: #eef2fb;
+    --haze: #8b96b3;
+    --haze-dim: #5c6786;
+
+    /* Signal */
+    --amber: #ffb100;
+    --amber-dim: #b87e00;
+    --cyan: #4dd8e6;
+    --danger: #ff5d5d;
+    --danger-dim: #c94444;
+    --good: #4caf7d;
+
+    /* Type */
+    --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body: 'Public Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
 * {
@@ -16,111 +37,264 @@
     box-sizing: border-box;
 }
 
-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    min-height: 100vh;
+html {
+    background: var(--void);
 }
 
-/* Navbar */
+body {
+    background: var(--void);
+    color: var(--star);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Ambient nebula wash behind everything, under the starfield canvas */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+        radial-gradient(ellipse 800px 500px at 12% -5%, rgba(255, 177, 0, 0.10), transparent 60%),
+        radial-gradient(ellipse 900px 600px at 88% 15%, rgba(77, 216, 230, 0.08), transparent 60%),
+        radial-gradient(ellipse 1000px 700px at 50% 100%, rgba(77, 100, 216, 0.07), transparent 60%),
+        var(--void);
+    pointer-events: none;
+}
+
+#starfield {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+a {
+    color: var(--cyan);
+}
+
+::selection {
+    background: rgba(255, 177, 0, 0.3);
+    color: var(--star);
+}
+
+/* Visible keyboard focus everywhere, Bootstrap defaults included */
+:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+}
+
+/* =========================================================================
+   Navbar
+   ========================================================================= */
 .navbar {
-    background: rgba(20, 20, 20, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 0.6rem 1.5rem;
-    border-bottom: 1px solid #333;
+    background: rgba(6, 10, 20, 0.85);
+    backdrop-filter: blur(14px);
+    padding: 0.65rem 1.5rem;
+    border-bottom: 1px solid var(--line);
 }
 
 .navbar-brand {
-    font-size: 1.6rem;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
     font-weight: 700;
-    color: var(--accent) !important;
-    letter-spacing: -0.5px;
+    color: var(--star) !important;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
 }
 
 .navbar-brand i {
-    margin-right: 0.3rem;
+    display: none; /* replaced by the roundel below */
+}
+
+.navbar-brand::before {
+    content: "";
+    display: inline-block;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--void-deep);
+    border: 1.5px solid var(--amber);
+    box-shadow: 0 0 0 1px var(--void-deep), inset 0 0 8px rgba(255, 177, 0, 0.5);
+    position: relative;
+}
+
+.navbar-brand::after {
+    content: "";
+    position: absolute;
+    left: 1.5rem;
+    top: 0.9rem;
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px 1px var(--cyan);
 }
 
 .nav-btn {
     background: none;
-    border: 1px solid #444;
-    color: var(--text-primary);
+    border: 1px solid var(--line);
+    color: var(--haze);
     padding: 0.4rem 1rem;
-    border-radius: 20px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
 }
 
-.nav-btn:hover,
+.nav-btn:hover {
+    border-color: var(--amber-dim);
+    color: var(--star);
+    background: var(--panel-raised);
+}
+
 .nav-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
+    background: rgba(255, 177, 0, 0.12);
+    border-color: var(--amber);
+    color: var(--amber);
 }
 
-/* Search */
+/* =========================================================================
+   Search / hero console
+   ========================================================================= */
 .search-section {
-    background: linear-gradient(180deg, rgba(20,20,20,0.8) 0%, var(--bg-primary) 100%);
-    padding: 2rem 0 1rem;
+    background:
+        linear-gradient(rgba(6, 10, 20, 0) 0%, var(--void) 92%),
+        repeating-linear-gradient(0deg, transparent 0 39px, rgba(139, 150, 179, 0.05) 39px 40px),
+        repeating-linear-gradient(90deg, transparent 0 39px, rgba(139, 150, 179, 0.05) 39px 40px);
+    padding: 3.25rem 0 1.75rem;
+}
+
+.console-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 0.6rem;
+}
+
+.console-headline {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 600;
+    color: var(--star);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-bracket {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 1rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-right: none;
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    border-radius: 8px 0 0 8px;
 }
 
 .search-bar .form-control {
-    background: var(--bg-secondary);
-    border: 1px solid #444;
-    color: var(--text-primary);
-    padding: 0.8rem 1.2rem;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: none;
+    color: var(--star);
+    padding: 0.85rem 1rem;
     font-size: 1rem;
-    border-radius: 25px 0 0 25px;
+    border-radius: 0;
 }
 
 .search-bar .form-control:focus {
-    background: var(--bg-card);
-    border-color: var(--accent);
-    box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25);
-    color: var(--text-primary);
+    background: var(--panel-raised);
+    border-color: var(--amber-dim);
+    box-shadow: none;
+    color: var(--star);
 }
 
 .search-bar .form-control::placeholder {
-    color: var(--text-secondary);
+    color: var(--haze-dim);
 }
 
 .search-bar .btn {
-    border-radius: 0 25px 25px 0;
-    padding: 0.8rem 1.5rem;
+    border-radius: 0 8px 8px 0;
+    padding: 0.85rem 1.6rem;
 }
 
 /* Section Titles */
 .section-title {
-    color: var(--text-primary);
+    color: var(--star);
+    font-family: var(--font-display);
     font-weight: 600;
     margin-bottom: 1.2rem;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
 }
 
-/* Movie Grid */
+/* =========================================================================
+   Media grid + cards
+   ========================================================================= */
 .movie-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1.2rem;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 1.1rem;
     padding-bottom: 2rem;
 }
 
-/* Movie Card */
 .movie-card {
-    background: var(--bg-card);
-    border-radius: 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     position: relative;
 }
 
-.movie-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+.movie-card:hover,
+.movie-card:focus-within {
+    transform: translateY(-3px);
+    border-color: var(--amber-dim);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
     z-index: 2;
+}
+
+/* Signature: viewfinder reticle brackets on hover, single pseudo-element */
+.movie-card::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    bottom: 46px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    background:
+        linear-gradient(to right, var(--amber) 2px, transparent 2px) top left / 14px 2px no-repeat,
+        linear-gradient(to bottom, var(--amber) 2px, transparent 2px) top left / 2px 14px no-repeat,
+        linear-gradient(to left, var(--amber) 2px, transparent 2px) top right / 14px 2px no-repeat,
+        linear-gradient(to bottom, var(--amber) 2px, transparent 2px) top right / 2px 14px no-repeat,
+        linear-gradient(to right, var(--amber) 2px, transparent 2px) bottom left / 14px 2px no-repeat,
+        linear-gradient(to top, var(--amber) 2px, transparent 2px) bottom left / 2px 14px no-repeat,
+        linear-gradient(to left, var(--amber) 2px, transparent 2px) bottom right / 14px 2px no-repeat,
+        linear-gradient(to top, var(--amber) 2px, transparent 2px) bottom right / 2px 14px no-repeat;
+}
+
+.movie-card:hover::before,
+.movie-card:focus-within::before {
+    opacity: 1;
 }
 
 .movie-card .poster {
@@ -131,17 +305,17 @@ body {
 }
 
 .movie-card .card-body {
-    padding: 0.6rem 0.8rem;
+    padding: 0.65rem 0.8rem;
 }
 
 .movie-card .card-title {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--star);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.4rem;
 }
 
 .movie-card .card-meta {
@@ -149,11 +323,16 @@ body {
     justify-content: space-between;
     align-items: center;
     font-size: 0.75rem;
+    font-family: var(--font-mono);
 }
 
 .rating-badge {
-    color: var(--gold);
+    color: var(--amber);
     font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .rating-badge i {
@@ -163,7 +342,7 @@ body {
 .fav-btn {
     background: none;
     border: none;
-    color: #666;
+    color: var(--haze-dim);
     font-size: 1.1rem;
     cursor: pointer;
     padding: 0.2rem;
@@ -171,41 +350,50 @@ body {
     line-height: 1;
 }
 
-.fav-btn:hover,
+.fav-btn:hover {
+    color: var(--danger);
+    transform: scale(1.15);
+}
+
 .fav-btn.active {
-    color: var(--accent);
-    transform: scale(1.2);
+    color: var(--danger);
 }
 
 .no-poster {
     width: 100%;
     aspect-ratio: 4/3;
-    background: #333;
+    background: var(--void-deep);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--haze-dim);
     font-size: 2.5rem;
 }
 
 .media-badge {
     position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    background: rgba(0, 0, 0, 0.7);
-    color: var(--text-primary);
-    font-size: 0.7rem;
+    top: 0.55rem;
+    left: 0.55rem;
+    background: rgba(6, 10, 20, 0.8);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     z-index: 1;
 }
 
-/* Movie Detail Modal */
+/* =========================================================================
+   Detail modal
+   ========================================================================= */
 .modal-content {
-    background: var(--bg-secondary);
-    border: 1px solid #333;
-    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
     overflow: hidden;
 }
 
@@ -214,7 +402,7 @@ body {
     top: 1rem;
     right: 1rem;
     z-index: 10;
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
 .movie-detail {
@@ -224,6 +412,7 @@ body {
 
 .movie-detail-poster {
     flex: 0 0 380px;
+    background: var(--void-deep);
 }
 
 .movie-detail-poster img {
@@ -241,46 +430,51 @@ body {
 }
 
 .movie-detail-info h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--star);
 }
 
 .movie-meta {
     display: flex;
     align-items: center;
     gap: 1rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .movie-meta .rating-badge {
-    font-size: 1.1rem;
-    background: rgba(245, 197, 24, 0.15);
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
+    font-size: 0.78rem;
+    background: rgba(255, 177, 0, 0.1);
+    border: 1px solid rgba(255, 177, 0, 0.35);
+    padding: 0.3rem 0.65rem;
+    border-radius: 4px;
 }
 
 .movie-overview {
-    color: var(--text-secondary);
-    line-height: 1.6;
+    color: var(--haze);
+    line-height: 1.65;
     flex: 1;
     overflow-y: auto;
     max-height: 200px;
 }
 
-/* Chat Sidebar */
+/* =========================================================================
+   Chat sidebar — "mission comms"
+   ========================================================================= */
 .chat-sidebar {
     position: fixed;
     top: 0;
     right: -400px;
     width: 380px;
     height: 100vh;
-    background: var(--bg-secondary);
-    border-left: 1px solid #333;
+    background: var(--panel);
+    border-left: 1px solid var(--line);
     display: flex;
     flex-direction: column;
     transition: right 0.3s ease;
     z-index: 1050;
-    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .chat-sidebar.open {
@@ -292,13 +486,20 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.2rem;
-    border-bottom: 1px solid #333;
-    background: var(--bg-card);
+    border-bottom: 1px solid var(--line);
+    background: var(--panel-raised);
 }
 
 .chat-header h5 {
     margin: 0;
-    font-size: 1rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--star);
+}
+
+.chat-header i {
+    color: var(--amber);
 }
 
 .chat-messages {
@@ -307,29 +508,53 @@ body {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.9rem;
 }
 
 .chat-msg {
-    max-width: 85%;
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    max-width: 88%;
+    padding: 0.7rem 0.95rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    position: relative;
+}
+
+.chat-msg::before {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    opacity: 0.7;
 }
 
 .chat-msg.user {
-    background: var(--accent);
-    color: white;
+    background: rgba(255, 177, 0, 0.14);
+    border: 1px solid rgba(255, 177, 0, 0.3);
+    color: var(--star);
     align-self: flex-end;
-    border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-msg.user::before {
+    content: "You";
+    color: var(--amber);
+    text-align: right;
 }
 
 .chat-msg.bot {
-    background: var(--bg-card);
-    color: var(--text-primary);
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    color: var(--star);
     align-self: flex-start;
-    border-bottom-left-radius: 4px;
+    border-bottom-left-radius: 2px;
+}
+
+.chat-msg.bot::before {
+    content: "Space Recommender";
+    color: var(--cyan);
 }
 
 .chat-msg.bot p {
@@ -339,43 +564,261 @@ body {
 
 .chat-input {
     padding: 0.8rem;
-    border-top: 1px solid #333;
-    background: var(--bg-card);
+    border-top: 1px solid var(--line);
+    background: var(--panel-raised);
 }
 
 .chat-input .form-control {
-    background: var(--bg-primary);
-    border: 1px solid #444;
-    color: var(--text-primary);
+    background: var(--void-deep);
+    border: 1px solid var(--line);
+    color: var(--star);
     border-radius: 20px 0 0 20px;
 }
 
 .chat-input .form-control:focus {
-    background: var(--bg-secondary);
-    border-color: var(--accent);
+    background: var(--void-deep);
+    border-color: var(--amber-dim);
     box-shadow: none;
-    color: var(--text-primary);
+    color: var(--star);
 }
 
 .chat-input .btn {
     border-radius: 0 20px 20px 0;
 }
 
-/* Loading */
+/* Chat "save for later" recommendations */
+.chat-recs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.75rem;
+}
+
+.chat-rec {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+}
+
+.chat-rec-title {
+    font-size: 0.85rem;
+    color: var(--star);
+    line-height: 1.2;
+}
+
+.chat-rec-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--amber-dim);
+    color: var(--amber);
+    border-radius: 5px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.chat-rec-btn:hover {
+    background: var(--amber);
+    color: var(--void-deep);
+}
+
+.chat-rec-btn.saved {
+    border-color: var(--good);
+    color: var(--good);
+    cursor: default;
+}
+
+.chat-rec-btn.saved:hover {
+    background: transparent;
+    color: var(--good);
+}
+
+/* =========================================================================
+   Loading
+   ========================================================================= */
 .loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(3, 5, 9, 0.7);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2000;
 }
 
-/* Responsive */
+/* =========================================================================
+   Auth overlay — access gate
+   ========================================================================= */
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse 700px 500px at 50% 30%, rgba(255, 177, 0, 0.08), transparent 60%),
+        var(--void-deep);
+    padding: 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 2.2rem 2rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    position: relative;
+}
+
+.auth-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--amber);
+    text-align: center;
+    margin-bottom: 0.9rem;
+}
+
+.auth-brand {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--star);
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.auth-brand i {
+    color: var(--amber);
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: var(--haze);
+    margin: 0.5rem 0 1.6rem;
+    font-size: 0.92rem;
+}
+
+.auth-card .form-control {
+    background: var(--void-deep);
+    border: 1px solid var(--line);
+    color: var(--star);
+    padding: 0.7rem 0.9rem;
+}
+
+.auth-card .form-control:focus {
+    background: var(--void-deep);
+    color: var(--star);
+    border-color: var(--amber-dim);
+    box-shadow: none;
+}
+
+.auth-error {
+    background: rgba(255, 93, 93, 0.12);
+    border: 1px solid var(--danger-dim);
+    color: var(--danger);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.auth-toggle {
+    text-align: center;
+    color: var(--haze);
+    font-size: 0.88rem;
+    margin: 0.6rem 0 0;
+}
+
+.auth-toggle a {
+    color: var(--amber);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-toggle a:hover {
+    text-decoration: underline;
+}
+
+/* Navbar user area */
+.user-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--star);
+    font-size: 0.9rem;
+    padding-left: 0.6rem;
+    border-left: 1px solid var(--line);
+}
+
+/* =========================================================================
+   Bootstrap utility overrides — retheme without touching markup/JS
+   ========================================================================= */
+.btn-danger {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--void-deep);
+    font-weight: 600;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background: #ffc233;
+    border-color: #ffc233;
+    color: var(--void-deep);
+}
+
+.btn-danger:active {
+    background: var(--amber-dim) !important;
+    border-color: var(--amber-dim) !important;
+    color: var(--void-deep) !important;
+}
+
+.btn-outline-danger {
+    background: transparent;
+    border-color: var(--haze-dim);
+    color: var(--star);
+}
+
+.btn-outline-danger:hover {
+    background: rgba(255, 93, 93, 0.12);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.bg-danger {
+    background: var(--danger) !important;
+}
+
+.text-danger {
+    color: var(--amber) !important;
+}
+
+.text-muted {
+    color: var(--haze) !important;
+}
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
 @media (max-width: 768px) {
     .movie-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -397,169 +840,44 @@ body {
     }
 
     .nav-btn {
-        font-size: 0.8rem;
-        padding: 0.3rem 0.7rem;
+        font-size: 0.78rem;
+        padding: 0.32rem 0.7rem;
+    }
+
+    .console-headline {
+        font-size: 1.4rem;
     }
 }
 
-/* Scrollbar */
+/* =========================================================================
+   Scrollbar
+   ========================================================================= */
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+    background: var(--void);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 3px;
+    background: var(--line);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--haze-dim);
 }
 
-/* Auth overlay (login / register) */
-.auth-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #000 0%, #141414 100%);
-    padding: 1rem;
-}
-
-.auth-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--bg-secondary);
-    border: 1px solid #333;
-    border-radius: 10px;
-    padding: 2.2rem 2rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-}
-
-.auth-brand {
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: var(--accent);
-    text-align: center;
-    letter-spacing: -0.5px;
-}
-
-.auth-subtitle {
-    text-align: center;
-    color: var(--text-secondary);
-    margin: 0.4rem 0 1.6rem;
-    font-size: 0.95rem;
-}
-
-.auth-card .form-control {
-    background: var(--bg-card);
-    border: 1px solid #333;
-    color: var(--text-primary);
-    padding: 0.7rem 0.9rem;
-}
-
-.auth-card .form-control:focus {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border-color: var(--accent);
-    box-shadow: none;
-}
-
-.auth-error {
-    background: rgba(229, 9, 20, 0.15);
-    border: 1px solid var(--accent);
-    color: #ff6b6b;
-    border-radius: 6px;
-    padding: 0.6rem 0.8rem;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    text-align: center;
-}
-
-.auth-toggle {
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin: 0.6rem 0 0;
-}
-
-.auth-toggle a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.auth-toggle a:hover {
-    text-decoration: underline;
-}
-
-/* Navbar user area */
-.user-area {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    padding-left: 0.6rem;
-    border-left: 1px solid #333;
-}
-
-/* Chat "save for later" recommendations */
-.chat-recs {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0.25rem 0 0.75rem;
-}
-
-.chat-rec {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    background: var(--bg-card);
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 0.55rem 0.7rem;
-}
-
-.chat-rec-title {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.chat-rec-btn {
-    flex-shrink: 0;
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    border-radius: 6px;
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.chat-rec-btn:hover {
-    background: var(--accent);
-    color: #fff;
-}
-
-.chat-rec-btn.saved {
-    border-color: #2e7d32;
-    color: #4caf50;
-    cursor: default;
-}
-
-.chat-rec-btn.saved:hover {
-    background: transparent;
-    color: #4caf50;
+/* =========================================================================
+   Reduced motion
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    .movie-card,
+    .movie-card::before,
+    .chat-sidebar,
+    .nav-btn,
+    .fav-btn {
+        transition: none !important;
+    }
 }
