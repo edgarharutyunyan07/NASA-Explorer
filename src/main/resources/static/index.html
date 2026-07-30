@@ -92,6 +92,7 @@
                     <button class="btn btn-danger" onclick="searchMedia()">
                         <i class="bi bi-search"></i>
                     </button>
+                    <div class="search-history" id="searchHistory"></div>
                 </div>
             </div>
         </div>
@@ -100,6 +101,185 @@
 
 <!-- Browse Section -->
 <section id="browseSection" class="container-fluid px-4 mt-3">
+    <!-- NASA Info Section -->
+    <div id="nasaInfoSection" class="nasa-info-section">
+        <div class="info-header">
+            <h2 class="info-title">Explore the Universe</h2>
+            <p class="info-subtitle">Discover fascinating facts about space, NASA missions, and our cosmic exploration</p>
+        </div>
+
+        <!-- Featured Discoveries -->
+        <div class="info-grid mb-5">
+            <div class="info-card featured" onclick="searchMedia('James Webb Space Telescope')">
+                <div class="card-icon">🔭</div>
+                <h3>James Webb Space Telescope</h3>
+                <p>Observing the universe in infrared, revealing the earliest galaxies and exoplanet atmospheres.</p>
+                <span class="card-link"><i class="bi bi-arrow-right"></i> Explore Images</span>
+            </div>
+            <div class="info-card featured" onclick="searchMedia('Mars rover')">
+                <div class="card-icon">🚀</div>
+                <h3>Mars Rovers</h3>
+                <p>Perseverance and Curiosity rovers uncovering the red planet's secrets and searching for signs of ancient life.</p>
+                <span class="card-link"><i class="bi bi-arrow-right"></i> Explore Images</span>
+            </div>
+            <div class="info-card featured" onclick="searchMedia('Hubble Space Telescope')">
+                <div class="card-icon">🌌</div>
+                <h3>Hubble's Legacy</h3>
+                <p>30+ years of breathtaking deep-space observations, revolutionizing our understanding of the cosmos.</p>
+                <span class="card-link"><i class="bi bi-arrow-right"></i> Explore Images</span>
+            </div>
+            <div class="info-card featured" onclick="searchMedia('International Space Station')">
+                <div class="card-icon">🛰️</div>
+                <h3>ISS & Human Spaceflight</h3>
+                <p>Continuous human presence in orbit, advancing science and international cooperation in space.</p>
+                <span class="card-link"><i class="bi bi-arrow-right"></i> Explore Images</span>
+            </div>
+        </div>
+
+        <!-- Space Facts Section -->
+        <div class="facts-section">
+            <h3 class="section-subtitle">Did You Know?</h3>
+            <div class="facts-grid">
+                <div class="fact-card" onclick="showInfoModal('solar-system')">
+                    <div class="fact-number">4.6B</div>
+                    <p>Age of our solar system in years</p>
+                </div>
+                <div class="fact-card" onclick="showInfoModal('galaxies')">
+                    <div class="fact-number">200B</div>
+                    <p>Estimated galaxies in the observable universe</p>
+                </div>
+                <div class="fact-card" onclick="showInfoModal('sun-size')">
+                    <div class="fact-number">1:90</div>
+                    <p>One million Earths fit inside the Sun</p>
+                </div>
+                <div class="fact-card" onclick="showInfoModal('universe-age')">
+                    <div class="fact-number">13.8B</div>
+                    <p>Age of the universe in years</p>
+                </div>
+                <div class="fact-card" onclick="showInfoModal('andromeda')">
+                    <div class="fact-number">2.2M</div>
+                    <p>Years for light from Andromeda to reach us</p>
+                </div>
+                <div class="fact-card" onclick="showInfoModal('earth-orbit')">
+                    <div class="fact-number">60,000</div>
+                    <p>Miles per hour: Earth's orbital velocity</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Space Exploration Timeline -->
+        <div class="timeline-section mt-5">
+            <h3 class="section-subtitle">Milestones in Space Exploration</h3>
+            <div class="timeline">
+                <div class="timeline-item left" onclick="showInfoModal('vostok-1')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>1961</h4>
+                        <p>Yuri Gagarin becomes first human in space aboard Vostok 1</p>
+                    </div>
+                </div>
+                <div class="timeline-item right" onclick="showInfoModal('apollo-11')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>1969</h4>
+                        <p>Apollo 11: Humans land on the Moon for the first time</p>
+                    </div>
+                </div>
+                <div class="timeline-item left" onclick="showInfoModal('hubble')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>1990</h4>
+                        <p>Hubble Space Telescope launched, revolutionizing astronomy</p>
+                    </div>
+                </div>
+                <div class="timeline-item right" onclick="showInfoModal('iss')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>1998</h4>
+                        <p>International Space Station construction begins</p>
+                    </div>
+                </div>
+                <div class="timeline-item left" onclick="showInfoModal('jwst')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>2021</h4>
+                        <p>James Webb Space Telescope launches, peering into the early universe</p>
+                    </div>
+                </div>
+                <div class="timeline-item right" onclick="showInfoModal('artemis')">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>2030s</h4>
+                        <p>Artemis missions target returning humans to the Moon</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interesting Facts -->
+        <div class="interesting-facts mt-5 mb-5">
+            <h3 class="section-subtitle">Fascinating Facts About Space</h3>
+            <div class="facts-list">
+                <div class="fact-item" onclick="showInfoModal('venus-day')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>A Day on Venus</h5>
+                        <p>Takes 243 Earth days to rotate once, but only 225 to orbit the Sun—making a day longer than a year!</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('saturn-rings')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Saturn's Rings</h5>
+                        <p>Saturn is the only planet less dense than water—it would float in an ocean large enough to hold it.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('neutron-stars')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Neutron Stars</h5>
+                        <p>So dense that a teaspoon of neutron star material would weigh about one billion tons on Earth.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('voyager-1')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Voyager 1</h5>
+                        <p>Launched in 1977 and remains humanity's most distant object, traveling through interstellar space.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('iss-sunrises')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>ISS Sunrises</h5>
+                        <p>Astronauts on the ISS experience about 16 sunrises and sunsets every 24 hours as it orbits Earth.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('moonwalk')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Moonwalk Duration</h5>
+                        <p>Apollo 11 astronauts spent just 2.5 hours exploring the lunar surface, yet changed human history.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('exoplanets')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Exoplanet Count</h5>
+                        <p>Over 5,000 confirmed exoplanets discovered, with thousands more waiting to be confirmed.</p>
+                    </div>
+                </div>
+                <div class="fact-item" onclick="showInfoModal('light-speed')">
+                    <i class="bi bi-star-fill"></i>
+                    <div>
+                        <h5>Light Speed Travel</h5>
+                        <p>It would take 70,000 years to reach the nearest star system at current spacecraft speeds.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="fact-strip" id="spaceFactStrip">
         <i class="bi bi-lightbulb-fill"></i>
         <span id="spaceFact"></span>
@@ -154,6 +334,30 @@
                         </a>
                         <button class="btn btn-danger btn-lg" id="modalFavBtn" onclick="toggleFavoriteFromModal()">
                             <i class="bi bi-heart"></i> Add to Favorites
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Detail Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <button type="button" class="btn-close btn-close-white modal-close-btn" data-bs-dismiss="modal"></button>
+            <div class="modal-body p-0">
+                <div class="info-detail">
+                    <div class="info-detail-header">
+                        <div class="info-detail-icon" id="modalInfoIcon"></div>
+                        <h2 id="modalInfoTitle"></h2>
+                    </div>
+                    <div class="info-detail-content">
+                        <p class="info-detail-description" id="modalInfoDescription"></p>
+                        <div class="info-detail-body" id="modalInfoBody"></div>
+                        <button class="btn btn-danger btn-lg mt-3" id="modalSearchBtn" onclick="searchFromInfoModal()">
+                            <i class="bi bi-search"></i> Search NASA Images
                         </button>
                     </div>
                 </div>

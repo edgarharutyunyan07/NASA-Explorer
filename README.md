@@ -1,10 +1,30 @@
-# TUMO Final Project — Movie Discovery App
+# TUMO Final Project — NASA Explorer
 
-A full-stack movie app you will build yourself: search real movies, save them to
-your favorites and watchlist, create an account, and chat with an AI that
-recommends films.
+A full-stack space exploration app: search NASA's image and video library, save your favorites and watchlist, create an account, and chat with an AI that recommends space discoveries.
 
 **The frontend is finished. The backend is your job.**
+
+---
+
+## 🚀 Quick Start Setup
+
+### 1. Environment Variables
+
+Create a `.env` file in the project root by copying the example:
+
+```bash
+cp .env.example .env
+```
+
+Then add your API keys to `.env`:
+
+```env
+GROQ_API_KEY=your_actual_groq_api_key_here
+```
+
+**Get your Groq API key:** https://console.groq.com/keys
+
+**⚠️ Important:** The `.env` file is in `.gitignore` and will NOT be committed. Never commit real API keys to GitHub!
 
 Every Java class in this project is a skeleton: the class names, method signatures
 and annotations are there, but the bodies are empty and marked `TODO`. Each `TODO`

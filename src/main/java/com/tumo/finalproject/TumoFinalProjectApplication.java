@@ -1,5 +1,6 @@
 package com.tumo.finalproject;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -17,6 +18,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TumoFinalProjectApplication {
 
     public static void main(String[] args) {
+        // Load .env file before Spring starts
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .load();
+
+        // Set environment variables so Spring can read them
+        dotenv.entries().forEach(entry -> {
+            if (System.getenv(entry.getKey()) == null) {
+                System.setProperty(entry.getKey(), entry.getValue());
+            }
+        });
+
         SpringApplication.run(TumoFinalProjectApplication.class, args);
     }
 }
